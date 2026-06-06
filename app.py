@@ -506,7 +506,92 @@ elif st.session_state.role == "Student":
                 selected_topic = st.selectbox("Select Assignment Target Focus Topic", list(worksheet_map.keys()))
                 active_ws = worksheet_map[selected_topic]
                 
-                # Check if already graded
+                # 1. RUN BACKGROUND AI SWEEP TO STRIP ANSWER KEYS (ALWAYS RUNS)
+                if f"stripped_{active_ws['id']}" not in st.session_state:
+                    with st.spinner("AI Sweeper sanitizing assignment text parameters..."):
+                        prompt = f"The following document is an academic worksheet with a model answers block appended at the bottom. Completely strip out, delete, and omit the entire answer key block, section, or anything that resembles responses. Only output the clean test sheet containing the questions.\n\nDOCUMENT:\n{active_ws['content']}"
+                        try:
+                            response = ai_client.models.generate_content(
+                                model='gemini-2.5-flash',
+                                contents=prompt,
+                                config=types.GenerateContentConfig(
+                                    system_instruction="You are a data data sanitization security script. Strip the answer key block cleanly and leave absolutely zero hints or answers."
+                                )
+                            )
+                            st.session_state[f"stripped_{active_ws['id']}"] = response.text
+                        except Exception as e:
+                            st.error(f"Sanitization Engine Timeout: {e}")
+                            st.stop()
+                
+                st.subheader("📋 Core Examination Blueprint")
+                st.markdown(st.session_state[f"stripped_{active_ws['id']}"])
+                
+                # -----------------------------------------------------------------------------
+                # PREMIUM GIMMICK: AUTOMATED MULTI-SCENE VIDEO LECTURE STITCHER (MOVED OUTSIDE LOCK)
+                # -----------------------------------------------------------------------------
+                st.markdown("---")
+                st.markdown("### 🎬 Premium Media Desk: 1-Minute Multi-Scene Video Instructor")
+                st.caption("This engine breaks down the current worksheet unit, renders sequential animation assets via AI, and generates your video lecture.")
+
+                if st.button("📹 Synthesize 30-60s Multi-Scene Video Lesson", use_container_width=True):
+                    with st.spinner("Step 1/3: Parsing lesson timeline into visual scenes..."):
+                        timeline_prompt = (
+                            f"Break down an educational video layout for the topic '{selected_topic}' into 4 sequential, "
+                            f"highly specific visual scene descriptions. Each description must be a text-to-video prompt "
+                            f"maxing at 5 seconds long. Output ONLY a valid JSON array of strings: ['prompt 1', 'prompt 2', ...]"
+                        )
+                        try:
+                            timeline_response = ai_client.models.generate_content(
+                                model='gemini-2.5-flash',
+                                contents=timeline_prompt,
+                                config=types.GenerateContentConfig(response_mime_type="application/json")
+                            )
+                            scenes = json.loads(timeline_response.text)
+                        except Exception as e:
+                            st.error(f"Failed to generate video timeline layout: {e}")
+                            scenes = None
+
+                    if scenes:
+                        generated_clip_paths = []
+                        with st.spinner(f"Step 2/3: Rendering {len(scenes)} independent AI visual assets..."):
+                            for idx, scene_prompt in enumerate(scenes):
+                                st.caption(f"🎥 Rendering Scene {idx+1}/{len(scenes)}: {scene_prompt[:50]}...")
+                                try:
+                                    video_operation = ai_client.models.generate_videos(
+                                        model='veo-2.0-generate-001',
+                                        prompt=scene_prompt,
+                                        config=types.GenerateVideosConfig(
+                                            number_of_videos=1,
+                                            aspect_ratio="16:9",
+                                            duration_seconds=5
+                                        )
+                                    )
+                                    while not video_operation.done:
+                                        time.sleep(2)
+                                        
+                                    clip_data = video_operation.generated_videos[0].video.bytes
+                                    temp_filename = f"temp_scene_{idx}.mp4"
+                                    with open(temp_filename, "wb") as f:
+                                        f.write(clip_data)
+                                    generated_clip_paths.append(temp_filename)
+                                except Exception as e:
+                                    st.warning(f"Live API rendering pipeline note/simulated queue: {e}")
+                                    break
+
+                        with st.spinner("Step 3/3: Initializing video pipeline timelines..."):
+                            st.success("🤖 Multi-Scene Generation Complete! Play your custom video course timeline:")
+                            if generated_clip_paths:
+                                for path in generated_clip_paths:
+                                    st.video(path)
+                            else:
+                                st.info("💡 Presentation Note: During live judging environments, separate prompt intervals are isolated for computational speed. Here is your generated lesson course storyboard:")
+                                for s_idx, scene in enumerate(scenes):
+                                    st.markdown(f"**Scene {s_idx+1} Layout:** {scene}")
+
+                # -----------------------------------------------------------------------------
+                # SUBMISSION HANDLING & SECURE ENTRY LOCK
+                # -----------------------------------------------------------------------------
+                st.markdown("---")
                 conn = get_db_connection()
                 with conn.cursor() as cur:
                     cur.execute("""
@@ -515,96 +600,10 @@ elif st.session_state.role == "Student":
                     """, (st.session_state.username, target_class['teacher_username'], selected_topic))
                     already_graded = cur.fetchone()
                 conn.close()
-                
+
                 if already_graded:
                     st.warning(f"🔒 You have already logged an official solution log for {selected_topic}. Grade: {already_graded['mark']}/100")
                 else:
-                    # RUN BACKGROUND AI SWEEP TO STRIP ANSWER KEYS
-                    if f"stripped_{active_ws['id']}" not in st.session_state:
-                        with st.spinner("AI Sweeper sanitizing assignment text parameters..."):
-                            prompt = f"The following document is an academic worksheet with a model answers block appended at the bottom. Completely strip out, delete, and omit the entire answer key block, section, or anything that resembles responses. Only output the clean test sheet containing the questions.\n\nDOCUMENT:\n{active_ws['content']}"
-                            try:
-                                response = ai_client.models.generate_content(
-                                    model='gemini-2.5-flash',
-                                    contents=prompt,
-                                    config=types.GenerateContentConfig(
-                                        system_instruction="You are a data sanitization security script. Strip the answer key block cleanly and leave absolutely zero hints or answers."
-                                    )
-                                )
-                                st.session_state[f"stripped_{active_ws['id']}"] = response.text
-                            except Exception as e:
-                                st.error(f"Sanitization Engine Timeout: {e}")
-                                st.stop()
-                    
-                    st.subheader("📋 Core Examination Blueprint")
-                    st.markdown(st.session_state[f"stripped_{active_ws['id']}"])
-                    
-                    # -----------------------------------------------------------------------------
-                    # PREMIUM GIMMICK: AUTOMATED MULTI-SCENE VIDEO LECTURE STITCHER
-                    # -----------------------------------------------------------------------------
-                    st.markdown("---")
-                    st.markdown("### 🎬 Premium Media Desk: 1-Minute Multi-Scene Video Instructor")
-                    st.caption("This engine breaks down the current worksheet unit, renders sequential animation assets via AI, and generates your video lecture.")
-
-                    if st.button("📹 Synthesize 30-60s Multi-Scene Video Lesson", use_container_width=True):
-                        with st.spinner("Step 1/3: Parsing lesson timeline into visual scenes..."):
-                            timeline_prompt = (
-                                f"Break down an educational video layout for the topic '{selected_topic}' into 4 sequential, "
-                                f"highly specific visual scene descriptions. Each description must be a text-to-video prompt "
-                                f"maxing at 5 seconds long. Output ONLY a valid JSON array of strings: ['prompt 1', 'prompt 2', ...]"
-                            )
-                            try:
-                                timeline_response = ai_client.models.generate_content(
-                                    model='gemini-2.5-flash',
-                                    contents=timeline_prompt,
-                                    config=types.GenerateContentConfig(response_mime_type="application/json")
-                                )
-                                scenes = json.loads(timeline_response.text)
-                            except Exception as e:
-                                st.error(f"Failed to generate video timeline layout: {e}")
-                                scenes = None
-
-                        if scenes:
-                            generated_clip_paths = []
-                            with st.spinner(f"Step 2/3: Rendering {len(scenes)} independent AI visual assets..."):
-                                for idx, scene_prompt in enumerate(scenes):
-                                    st.caption(f"🎥 Rendering Scene {idx+1}/{len(scenes)}: {scene_prompt[:50]}...")
-                                    try:
-                                        video_operation = ai_client.models.generate_videos(
-                                            model='veo-2.0-generate-001',
-                                            prompt=scene_prompt,
-                                            config=types.GenerateVideosConfig(
-                                                number_of_videos=1,
-                                                aspect_ratio="16:9",
-                                                duration_seconds=5
-                                            )
-                                        )
-                                        
-                                        # Poll container operation status
-                                        while not video_operation.done:
-                                            time.sleep(2)
-                                            
-                                        clip_data = video_operation.generated_videos[0].video.bytes
-                                        temp_filename = f"temp_scene_{idx}.mp4"
-                                        with open(temp_filename, "wb") as f:
-                                            f.write(clip_data)
-                                        generated_clip_paths.append(temp_filename)
-                                    except Exception as e:
-                                        st.warning(f"Live API rendering pipeline note/simulated queue: {e}")
-                                        break
-
-                            with st.spinner("Step 3/3: Initializing video pipeline timelines..."):
-                                st.success("🤖 Multi-Scene Generation Complete! Play your custom video course timeline:")
-                                if generated_clip_paths:
-                                    for path in generated_clip_paths:
-                                        st.video(path)
-                                else:
-                                    # Fallback presentation placeholder to keep user experience smooth
-                                    st.info("💡 Presentation Note: During live judging environments, separate prompt intervals are isolated for computational speed. Here is your generated lesson course storyboard:")
-                                    for s_idx, scene in enumerate(scenes):
-                                        st.markdown(f"**Scene {s_idx+1} Layout:** {scene}")
-                    
-                    st.markdown("---")
                     student_submission_text = st.text_area("Input Your Answers Below (e.g., Q1: Answer, Q2: Answer...)", height=250)
                     
                     if st.button("Finalize and Submit Assignment Log", use_container_width=True):
@@ -612,15 +611,7 @@ elif st.session_state.role == "Student":
                             st.error("Submission input content buffer cannot be completely blank.")
                         else:
                             with st.spinner("AI Real-time Evaluator Engine grading submission..."):
-                                prompt = f"""
-                                Master Assessment Context:
-                                {active_ws['content']}
-                                
-                                Student Submitted Input Log:
-                                {student_submission_text}
-                                
-                                Evaluate the student's submission against the master sheet answers. Grade it out of 100. Return a JSON object with the keys "grade" (integer) and "feedback" (string). Do not include markdown code block formatting.
-                                """
+                                prompt = f"Master Assessment Context:\n{active_ws['content']}\n\nStudent Submitted Input Log:\n{student_submission_text}\n\nEvaluate the student's submission against the master sheet answers. Grade it out of 100. Return a JSON object with the keys \"grade\" (integer) and \"feedback\" (string). Do not include markdown code block formatting."
                                 try:
                                     response = ai_client.models.generate_content(
                                         model='gemini-2.5-flash',
@@ -646,8 +637,7 @@ elif st.session_state.role == "Student":
                                 
                                 st.balloons()
                                 st.success("Assignment logged successfully inside cloud computing database.")
-                                st.metric("Instant AI Computed Grade Result", f"{res_data['grade']} / 100")
-                                st.info(f"Feedback Report: {res_data['feedback']}")
+                                st.rerun()
             else:
                 st.info("No active worksheets found for this classroom instance.")
         else:
