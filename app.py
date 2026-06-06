@@ -378,183 +378,194 @@ def trigger_logout(state):
 # TAIPY MARKDOWN LAYOUT BLUEPRINT
 # -----------------------------------------------------------------------------
 login_layout = """
-<part class="text-center">
+|text-center|
 # <tpl>{UI['app_title']}</tpl>
 <tpl>{UI['welcome_msg']}</tpl>
-</part>
+|
 
 ---
 
-<part render="{not logged_in}" class="container">
+|{not logged_in}|
+|container|
 <layout columns="1 1" gap="30px">
-    <part class="card">
-        ### 🔑 Sign-In Gateway
-        **Username**
-        <input value="{username_input}" class="fullwidth"/>
-        
-        **Password**
-        <input value="{password_input}" type="password" class="fullwidth"/>
-        <br/><br/>
-        <button label="Authenticate Access" on_action="handle_login" class="btn-primary"/>
-    </part>
+    |card|
+    ### 🔑 Sign-In Gateway
+    **Username**
+    <input value="{username_input}" class="fullwidth"/>
+    
+    **Password**
+    <input value="{password_input}" type="password" class="fullwidth"/>
+    <br/><br/>
+    <button label="Authenticate Access" on_action="handle_login" class="btn-primary"/>
+    |
 
-    <part class="card">
-        ### 📝 New Institutional Registration
-        **Create New Profile Username**
-        <input value="{reg_username}" class="fullwidth"/>
-        
-        **Secure Key Password**
-        <input value="{reg_password}" type="password" class="fullwidth"/>
-        
-        **System Role Persona**
-        <selector value="{reg_role}" lov="Teacher;Student" dropdown="True"/>
-        
-        **Teaching Dept**
-        <selector value="{reg_subject}" lov="Mathematics;General Science;English Language Arts;Social Studies;Computer Science" dropdown="True"/>
-        <br/><br/>
-        <button label="Deploy Global Tenant" on_action="handle_registration" class="btn-secondary"/>
-    </part>
+    |card|
+    ### 📝 New Institutional Registration
+    **Create New Profile Username**
+    <input value="{reg_username}" class="fullwidth"/>
+    
+    **Secure Key Password**
+    <input value="{reg_password}" type="password" class="fullwidth"/>
+    
+    **System Role Persona**
+    <selector value="{reg_role}" lov="Teacher;Student" dropdown="True"/>
+    
+    **Teaching Dept**
+    <selector value="{reg_subject}" lov="Mathematics;General Science;English Language Arts;Social Studies;Computer Science" dropdown="True"/>
+    <br/><br/>
+    <button label="Deploy Global Tenant" on_action="handle_registration" class="btn-secondary"/>
+    |
 </layout>
-</part>
+|
+|
 """
 
 teacher_layout = """
-<part render="{logged_in and user_role == 'Teacher'}">
+|{logged_in and user_role == 'Teacher'}|
 ## 🍎 Instructor Console — Dept: <tpl>{user_subject}</tpl>
 
 ---
 
 <layout columns="1 4" gap="20px">
-    <part class="sidebar-card">
-        #### Navigation Desk
-        <selector value="{selected_view}" lov="Classroom Roster;AI Lesson Architect;AI Worksheet Factory;📊 Student Advanced Analytics" mode="radio"/>
-        <br/><br/>
-        <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
-    </part>
+    |sidebar-card|
+    #### Navigation Desk
+    <selector value="{selected_view}" lov="Classroom Roster;AI Lesson Architect;AI Worksheet Factory;📊 Student Advanced Analytics" mode="radio"/>
+    <br/><br/>
+    <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
+    |
 
-    <part class="main-content">
-        <part render="{selected_view == 'Classroom Roster'}">
-            ### 👥 Active Class Enrollment Roster
-            <table data="{roster_table_data}"/>
-        </part>
+    |main-content|
+    |{selected_view == 'Classroom Roster'}|
+    ### 👥 Active Class Enrollment Roster
+    <table data="{roster_table_data}"/>
+    |
 
-        <part render="{selected_view == 'AI Lesson Architect'}">
-            ### 🧠 Core 5E Lesson Plan Synthesis Machine
-            **Syllabus Target Topic**
-            <input value="{topic_input}" class="fullwidth"/>
-            
-            **Target Cohort Grade Tier Selection**
-            <selector value="{grade_tier}" lov="Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League" dropdown="True"/>
-            <br/><br/>
-            <button label="Synthesize Lesson Plan" on_action="generate_lesson_plan" class="btn-primary"/>
-            <br/><br/>
-            <text_area value="{ai_output_lesson}" height="350px" class="fullwidth"/>
-        </part>
+    |{selected_view == 'AI Lesson Architect'}|
+    ### 🧠 Core 5E Lesson Plan Synthesis Machine
+    **Syllabus Target Topic**
+    <input value="{topic_input}" class="fullwidth"/>
+    
+    **Target Cohort Grade Tier Selection**
+    <selector value="{grade_tier}" lov="Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League" dropdown="True"/>
+    <br/><br/>
+    <button label="Synthesize Lesson Plan" on_action="generate_lesson_plan" class="btn-primary"/>
+    <br/><br/>
+    <text_area value="{ai_output_lesson}" height="350px" class="fullwidth"/>
+    |
 
-        <part render="{selected_view == 'AI Worksheet Factory'}">
-            ### 📝 Assessment Factory & Blueprint Key Generator
-            **Target Core Unit Objective**
-            <input value="{w_topic_input}" class="fullwidth"/>
-            <br/><br/>
-            <button label="Generate Test Sheet & Key" on_action="generate_worksheet" class="btn-primary"/>
-            <br/><br/>
-            <text_area value="{ai_output_worksheet}" height="300px" class="fullwidth"/>
-            <br/><br/>
-            <button label="Commit Worksheet to Local Storage Database" on_action="commit_worksheet_to_cloud" class="btn-success"/>
-        </part>
+    |{selected_view == 'AI Worksheet Factory'}|
+    ### 📝 Assessment Factory & Blueprint Key Generator
+    **Target Core Unit Objective**
+    <input value="{w_topic_input}" class="fullwidth"/>
+    <br/><br/>
+    <button label="Generate Test Sheet & Key" on_action="generate_worksheet" class="btn-primary"/>
+    <br/><br/>
+    <text_area value="{ai_output_worksheet}" height="300px" class="fullwidth"/>
+    <br/><br/>
+    <button label="Commit Worksheet to Local Storage Database" on_action="commit_worksheet_to_cloud" class="btn-success"/>
+    |
 
-        <part render="{selected_view == '📊 Student Advanced Analytics'}">
-            ### 📈 Command System Metrics Grid
-            <layout columns="1 1 1" gap="15px">
-                <part class="card text-center">##### Roster Volume \n ## <tpl>{total_students_metric}</tpl></part>
-                <part class="card text-center">##### Grade Mean \n ## <tpl>{class_mean_metric}</tpl></part>
-                <part class="card text-center">##### Live Test Forms \n ## <tpl>{published_tasks_metric}</tpl></part>
-            </layout>
-            
-            ---
-            
-            ### 🔮 Predictive Student Risk Diagnostics Mapping Suite
-            <button label="Run Automated AI Forensic Risk Sweep" on_action="run_predictive_risk_sweep" class="btn-warning"/>
-            <br/><br/>
-            <part render="{len(predictive_risk_logs) > 0}">
-                <table data="{predictive_risk_logs}"/>
-            </part>
-        </part>
-    </part>
+    |{selected_view == '📊 Student Advanced Analytics'}|
+    ### 📈 Command System Metrics Grid
+    <layout columns="1 1 1" gap="15px">
+        |card text-center|
+        ##### Roster Volume 
+        ## <tpl>{total_students_metric}</tpl>
+        |
+        |card text-center|
+        ##### Grade Mean 
+        ## <tpl>{class_mean_metric}</tpl>
+        |
+        |card text-center|
+        ##### Live Test Forms 
+        ## <tpl>{published_tasks_metric}</tpl>
+        |
+    </layout>
+    
+    ---
+    
+    ### 🔮 Predictive Student Risk Diagnostics Mapping Suite
+    <button label="Run Automated AI Forensic Risk Sweep" on_action="run_predictive_risk_sweep" class="btn-warning"/>
+    <br/><br/>
+    |{len(predictive_risk_logs) > 0}|
+    <table data="{predictive_risk_logs}"/>
+    |
+    |
+    |
 </layout>
-</part>
+|
 """
 
 student_layout = """
-<part render="{logged_in and user_role == 'Student'}">
+|{logged_in and user_role == 'Student'}|
 ## 🎒 Student Action Desktop Portal
 
 ---
 
 <layout columns="1 4" gap="20px">
-    <part class="sidebar-card">
-        #### Student Control Desk
-        <selector value="{student_view}" lov="🎒 Enroll in a Class;📂 Subject-Filtered Worksheet Desk;🏆 My Performance Ledger" mode="radio"/>
-        <br/><br/>
-        <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
-    </part>
+    |sidebar-card|
+    #### Student Control Desk
+    <selector value="{student_view}" lov="🎒 Enroll in a Class;📂 Subject-Filtered Worksheet Desk;🏆 My Performance Ledger" mode="radio"/>
+    <br/><br/>
+    <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
+    |
 
-    <part class="main-content">
-        <part render="{student_view == '🎒 Enroll in a Class'}">
-            ### 🎒 Connect Course Workspace Network
-            **Select Academic Instructor**
-            <selector value="{selected_teacher_string}" lov="{available_teachers}" dropdown="True"/>
-            
-            **Assign Student ID Token**
-            <input value="{student_id_token}" class="fullwidth"/>
-            
-            **Current Study Cohort Group**
-            <selector value="{student_grade_cohort}" lov="Grade 6;Grade 9;Grade 11;Undergraduate" dropdown="True"/>
-            <br/><br/>
-            <button label="Submit Secure Connection Registration" on_action="handle_class_enrollment" class="btn-primary"/>
-        </part>
+    |main-content|
+    |{student_view == '🎒 Enroll in a Class'}|
+    ### 🎒 Connect Course Workspace Network
+    **Select Academic Instructor**
+    <selector value="{selected_teacher_string}" lov="{available_teachers}" dropdown="True"/>
+    
+    **Assign Student ID Token**
+    <input value="{student_id_token}" class="fullwidth"/>
+    
+    **Current Study Cohort Group**
+    <selector value="{student_grade_cohort}" lov="Grade 6;Grade 9;Grade 11;Undergraduate" dropdown="True"/>
+    <br/><br/>
+    <button label="Submit Secure Connection Registration" on_action="handle_class_enrollment" class="btn-primary"/>
+    |
 
-        <part render="{student_view == '📂 Subject-Filtered Worksheet Desk'}">
-            ### 📝 Automated Sanitized Task Workspace
-            **Select Active Assignment Target**
-            <selector value="{selected_worksheet_topic}" lov="{available_worksheets}" dropdown="True" on_change="load_sanitized_worksheet"/>
-            <br/><br/>
-            <part render="{selected_worksheet_topic != ''}">
-                ##### 📋 Sanitized Examination Blueprint (Answers Stripped by AI)
-                <text_area value="{sanitized_blueprint_text}" height="250px" class="fullwidth" active="False"/>
-                
-                ---
-                
-                ##### Input Your Final Solution Answers Log Below:
-                <text_area value="{student_answer_buffer}" height="150px" class="fullwidth"/>
-                <br/><br/>
-                <button label="Finalize and Submit Assignment Log" on_action="process_student_homework_submission" class="btn-success"/>
-                
-                ---
-                
-                ##### Instant Grading Analysis Reports:
-                **Computed Grade:** <tpl>{student_grade_result}</tpl>/100
-                
-                **Evaluator Commentary:** <tpl>{student_feedback_report}</tpl>
-            </part>
-        </part>
+    |{student_view == '📂 Subject-Filtered Worksheet Desk'}|
+    ### 📝 Automated Sanitized Task Workspace
+    **Select Active Assignment Target**
+    <selector value="{selected_worksheet_topic}" lov="{available_worksheets}" dropdown="True" on_change="load_sanitized_worksheet"/>
+    <br/><br/>
+    |{selected_worksheet_topic != ''}|
+    ##### 📋 Sanitized Examination Blueprint (Answers Stripped by AI)
+    <text_area value="{sanitized_blueprint_text}" height="250px" class="fullwidth" active="False"/>
+    
+    ---
+    
+    ##### Input Your Final Solution Answers Log Below:
+    <text_area value="{student_answer_buffer}" height="150px" class="fullwidth"/>
+    <br/><br/>
+    <button label="Finalize and Submit Assignment Log" on_action="process_student_homework_submission" class="btn-success"/>
+    
+    ---
+    
+    ##### Instant Grading Analysis Reports:
+    **Computed Grade:** <tpl>{student_grade_result}</tpl>/100
+    
+    **Evaluator Commentary:** <tpl>{student_feedback_report}</tpl>
+    |
+    |
 
-        <part render="{student_view == '🏆 My Performance Ledger'}">
-            <h3>🏆 Historical Academic Performance Ledger Matrix</h3>
-            <table data="{my_grades_table_data}"/>
-        </part>
-    </part>
+    |{student_view == '🏆 My Performance Ledger'}|
+    ### 🏆 Historical Academic Performance Ledger Matrix
+    <table data="{my_grades_table_data}"/>
+    |
+    |
 </layout>
-</part>
+|
 """
 
 localization_bar = """
-<part class="card">
+|card|
 <layout columns="3 1">
     **🌐 Global Localization Platform Engine Suite:** Choose application interface language:
     <selector value="{selected_language}" lov="{language_options}" dropdown="True" on_change="translate_app_ui"/>
 </layout>
-</part>
+|
 
 ---
 """
