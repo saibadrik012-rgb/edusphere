@@ -181,13 +181,14 @@ def get_page_localization(target_lang: str):
     if cache_state_key in st.session_state:
         return st.session_state[cache_state_key]
         
-    with st.spinner(f"Translating whole app interface to {target_lang}..."):
+    with st.spinner(f"Translating interface to {target_lang}..."):
         try:
+            # We use ensure_ascii=False to allow foreign characters
+            json_str = json.dumps(ENGLISH_BASE, ensure_ascii=False)
             translation_prompt = (
-                f"You are a master localization system. I will provide you with a raw JSON dictionary of user interface strings. "
-                f"Translate every single value completely into {target_lang}. Keep all the keys identical. Preserve markdown formatting, emojis, and brackets where appropriate. "
-                f"Output ONLY the translated JSON dictionary object directly back, no explanations:\n\n"
-                f"{json.dumps(ENGLISH_BASE, ensure_code_encoding=True)}"
+                f"Translate the values of this JSON object into {target_lang}. "
+                f"Keep all keys, structure, emojis, and brackets exactly as they are. "
+                f"Return ONLY the valid JSON object. Do not include markdown code blocks or explanations.\n\n{json_str}"
             )
             response = ai_client.models.generate_content(
                 model='gemini-2.5-flash',
@@ -197,8 +198,9 @@ def get_page_localization(target_lang: str):
             localized_dictionary = json.loads(response.text)
             st.session_state[cache_state_key] = localized_dictionary
             return localized_dictionary
-        except Exception:
-            return ENGLISH_BASE # Fail-safe back to English if the translation call drops
+        except Exception as e:
+            st.error(f"Translation Error: {e}")
+            return ENGLISH_BASE
 
 # -----------------------------------------------------------------------------
 # GLOBAL SIDEBAR LOCALIZATION MATRIX PICKER
