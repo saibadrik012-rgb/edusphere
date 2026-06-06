@@ -378,73 +378,104 @@ def trigger_logout(state):
 # TAIPY MARKDOWN LAYOUT BLUEPRINT
 # -----------------------------------------------------------------------------
 login_layout = """
-<center>
-<h1><tpl>{UI['app_title']}</tpl></h1>
-<p><tpl>{UI['welcome_msg']}</tpl></p>
-</center>
-<hr/>
-<div class="container">
-<part render="{not logged_in}">
+<part class="text-center">
+# <tpl>{UI['app_title']}</tpl>
+<tpl>{UI['welcome_msg']}</tpl>
+</part>
+
+---
+
+<part render="{not logged_in}" class="container">
 <layout columns="1 1" gap="30px">
     <part class="card">
-        <h3>🔑 Sign-In Gateway</h3>
-        <label>Username</label><input value="{username_input}" class="fullwidth"/><br/><br/>
-        <label>Password</label><input value="{password_input}" type="password" class="fullwidth"/><br/><br/>
+        ### 🔑 Sign-In Gateway
+        **Username**
+        <input value="{username_input}" class="fullwidth"/>
+        
+        **Password**
+        <input value="{password_input}" type="password" class="fullwidth"/>
+        <br/><br/>
         <button label="Authenticate Access" on_action="handle_login" class="btn-primary"/>
     </part>
+
     <part class="card">
-        <h3>📝 New Institutional Registration</h3>
-        <label>Create New Profile Username</label><input value="{reg_username}" class="fullwidth"/><br/><br/>
-        <label>Secure Key Password</label><input value="{reg_password}" type="password" class="fullwidth"/><br/><br/>
-        <label>System Role Persona</label><selector value="{reg_role}" lov="Teacher;Student" dropdown="True"/><br/><br/>
-        <label>Teaching Dept</label><selector value="{reg_subject}" lov="Mathematics;General Science;English Language Arts;Social Studies;Computer Science" dropdown="True"/><br/><br/>
+        ### 📝 New Institutional Registration
+        **Create New Profile Username**
+        <input value="{reg_username}" class="fullwidth"/>
+        
+        **Secure Key Password**
+        <input value="{reg_password}" type="password" class="fullwidth"/>
+        
+        **System Role Persona**
+        <selector value="{reg_role}" lov="Teacher;Student" dropdown="True"/>
+        
+        **Teaching Dept**
+        <selector value="{reg_subject}" lov="Mathematics;General Science;English Language Arts;Social Studies;Computer Science" dropdown="True"/>
+        <br/><br/>
         <button label="Deploy Global Tenant" on_action="handle_registration" class="btn-secondary"/>
     </part>
 </layout>
 </part>
-</div>
 """
 
 teacher_layout = """
 <part render="{logged_in and user_role == 'Teacher'}">
-<h2>🍎 Instructor Console — Dept: <tpl>{user_subject}</tpl></h2>
-<hr/>
+## 🍎 Instructor Console — Dept: <tpl>{user_subject}</tpl>
+
+---
+
 <layout columns="1 4" gap="20px">
     <part class="sidebar-card">
-        <h4>Navigation Desk</h4>
+        #### Navigation Desk
         <selector value="{selected_view}" lov="Classroom Roster;AI Lesson Architect;AI Worksheet Factory;📊 Student Advanced Analytics" mode="radio"/>
         <br/><br/>
         <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
     </part>
+
     <part class="main-content">
         <part render="{selected_view == 'Classroom Roster'}">
-            <h3>👥 Active Class Enrollment Roster</h3>
+            ### 👥 Active Class Enrollment Roster
             <table data="{roster_table_data}"/>
         </part>
+
         <part render="{selected_view == 'AI Lesson Architect'}">
-            <h3>🧠 Core 5E Lesson Plan Synthesis Machine</h3>
-            <label>Syllabus Target Topic</label><input value="{topic_input}" class="fullwidth"/><br/><br/>
-            <label>Target Cohort Grade Tier Selection</label><selector value="{grade_tier}" lov="Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League" dropdown="True"/><br/><br/>
-            <button label="Synthesize Lesson Plan" on_action="generate_lesson_plan" class="btn-primary"/><br/><br/>
+            ### 🧠 Core 5E Lesson Plan Synthesis Machine
+            **Syllabus Target Topic**
+            <input value="{topic_input}" class="fullwidth"/>
+            
+            **Target Cohort Grade Tier Selection**
+            <selector value="{grade_tier}" lov="Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League" dropdown="True"/>
+            <br/><br/>
+            <button label="Synthesize Lesson Plan" on_action="generate_lesson_plan" class="btn-primary"/>
+            <br/><br/>
             <text_area value="{ai_output_lesson}" height="350px" class="fullwidth"/>
         </part>
+
         <part render="{selected_view == 'AI Worksheet Factory'}">
-            <h3>📝 Assessment Factory & Blueprint Key Generator</h3>
-            <label>Target Core Unit Objective</label><input value="{w_topic_input}" class="fullwidth"/><br/><br/>
-            <button label="Generate Test Sheet & Key" on_action="generate_worksheet" class="btn-primary"/><br/><br/>
-            <text_area value="{ai_output_worksheet}" height="300px" class="fullwidth"/><br/><br/>
+            ### 📝 Assessment Factory & Blueprint Key Generator
+            **Target Core Unit Objective**
+            <input value="{w_topic_input}" class="fullwidth"/>
+            <br/><br/>
+            <button label="Generate Test Sheet & Key" on_action="generate_worksheet" class="btn-primary"/>
+            <br/><br/>
+            <text_area value="{ai_output_worksheet}" height="300px" class="fullwidth"/>
+            <br/><br/>
             <button label="Commit Worksheet to Local Storage Database" on_action="commit_worksheet_to_cloud" class="btn-success"/>
         </part>
+
         <part render="{selected_view == '📊 Student Advanced Analytics'}">
-            <h3>📈 Command System Metrics Grid</h3>
+            ### 📈 Command System Metrics Grid
             <layout columns="1 1 1" gap="15px">
-                <div style="background:#222;padding:15px;border-radius:8px;text-align:center;"><h5>Roster Volume</h5><h2><tpl>{total_students_metric}</tpl></h2></div>
-                <div style="background:#222;padding:15px;border-radius:8px;text-align:center;"><h5>Grade Mean</h5><h2><tpl>{class_mean_metric}</tpl></h2></div>
-                <div style="background:#222;padding:15px;border-radius:8px;text-align:center;"><h5>Live Test Forms</h5><h2><tpl>{published_tasks_metric}</tpl></h2></div>
+                <part class="card text-center">##### Roster Volume \n ## <tpl>{total_students_metric}</tpl></part>
+                <part class="card text-center">##### Grade Mean \n ## <tpl>{class_mean_metric}</tpl></part>
+                <part class="card text-center">##### Live Test Forms \n ## <tpl>{published_tasks_metric}</tpl></part>
             </layout>
-            <hr/>
-            <h3>🔮 Predictive Student Risk Diagnostics Mapping Suite</h3>
-            <button label="Run Automated AI Forensic Risk Sweep" on_action="run_predictive_risk_sweep" class="btn-warning"/><br/><br/>
+            
+            ---
+            
+            ### 🔮 Predictive Student Risk Diagnostics Mapping Suite
+            <button label="Run Automated AI Forensic Risk Sweep" on_action="run_predictive_risk_sweep" class="btn-warning"/>
+            <br/><br/>
             <part render="{len(predictive_risk_logs) > 0}">
                 <table data="{predictive_risk_logs}"/>
             </part>
@@ -456,41 +487,58 @@ teacher_layout = """
 
 student_layout = """
 <part render="{logged_in and user_role == 'Student'}">
-<h2>🎒 Student Action Desktop Portal</h2>
-<hr/>
+## 🎒 Student Action Desktop Portal
+
+---
+
 <layout columns="1 4" gap="20px">
     <part class="sidebar-card">
-        <h4>Student Control Desk</h4>
+        #### Student Control Desk
         <selector value="{student_view}" lov="🎒 Enroll in a Class;📂 Subject-Filtered Worksheet Desk;🏆 My Performance Ledger" mode="radio"/>
         <br/><br/>
         <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
     </part>
+
     <part class="main-content">
         <part render="{student_view == '🎒 Enroll in a Class'}">
-            <h3>🎒 Connect Course Workspace Network</h3>
-            <label>Select Academic Instructor</label><selector value="{selected_teacher_string}" lov="{available_teachers}" dropdown="True"/><br/><br/>
-            <label>Assign Student ID Token</label><input value="{student_id_token}" class="fullwidth"/><br/><br/>
-            <label>Current Study Cohort Group</label><selector value="{student_grade_cohort}" lov="Grade 6;Grade 9;Grade 11;Undergraduate" dropdown="True"/><br/><br/>
+            ### 🎒 Connect Course Workspace Network
+            **Select Academic Instructor**
+            <selector value="{selected_teacher_string}" lov="{available_teachers}" dropdown="True"/>
+            
+            **Assign Student ID Token**
+            <input value="{student_id_token}" class="fullwidth"/>
+            
+            **Current Study Cohort Group**
+            <selector value="{student_grade_cohort}" lov="Grade 6;Grade 9;Grade 11;Undergraduate" dropdown="True"/>
+            <br/><br/>
             <button label="Submit Secure Connection Registration" on_action="handle_class_enrollment" class="btn-primary"/>
         </part>
+
         <part render="{student_view == '📂 Subject-Filtered Worksheet Desk'}">
-            <h3>📝 Automated Sanitized Task Workspace</h3>
-            <label>Select Active Assignment Target</label><selector value="{selected_worksheet_topic}" lov="{available_worksheets}" dropdown="True" on_change="load_sanitized_worksheet"/>
+            ### 📝 Automated Sanitized Task Workspace
+            **Select Active Assignment Target**
+            <selector value="{selected_worksheet_topic}" lov="{available_worksheets}" dropdown="True" on_change="load_sanitized_worksheet"/>
             <br/><br/>
             <part render="{selected_worksheet_topic != ''}">
-                <h5>📋 Sanitized Examination Blueprint (Answers Stripped by AI)</h5>
+                ##### 📋 Sanitized Examination Blueprint (Answers Stripped by AI)
                 <text_area value="{sanitized_blueprint_text}" height="250px" class="fullwidth" active="False"/>
-                <br/><hr/>
-                <h5>Input Your Final Solution Answers Log Below:</h5>
+                
+                ---
+                
+                ##### Input Your Final Solution Answers Log Below:
                 <text_area value="{student_answer_buffer}" height="150px" class="fullwidth"/>
                 <br/><br/>
                 <button label="Finalize and Submit Assignment Log" on_action="process_student_homework_submission" class="btn-success"/>
-                <br/><hr/>
-                <h5>Instant Grading Analysis Reports:</h5>
-                <p><b>Computed Grade:</b> <tpl>{student_grade_result}</tpl>/100</p>
-                <p><b>Evaluator Commentary:</b> <tpl>{student_feedback_report}</tpl></p>
+                
+                ---
+                
+                ##### Instant Grading Analysis Reports:
+                **Computed Grade:** <tpl>{student_grade_result}</tpl>/100
+                
+                **Evaluator Commentary:** <tpl>{student_feedback_report}</tpl>
             </part>
         </part>
+
         <part render="{student_view == '🏆 My Performance Ledger'}">
             <h3>🏆 Historical Academic Performance Ledger Matrix</h3>
             <table data="{my_grades_table_data}"/>
@@ -501,12 +549,14 @@ student_layout = """
 """
 
 localization_bar = """
-<div style="background:#111;padding:10px;border-radius:6px;margin-bottom:10px;">
+<part class="card">
 <layout columns="3 1">
-    <p style="margin-top:8px;">🌐 <b>Global Localization Platform Engine Suite:</b> Choose application interface language:</p>
+    **🌐 Global Localization Platform Engine Suite:** Choose application interface language:
     <selector value="{selected_language}" lov="{language_options}" dropdown="True" on_change="translate_app_ui"/>
 </layout>
-</div>
+</part>
+
+---
 """
 
 full_ui_blueprint = localization_bar + login_layout + teacher_layout + student_layout
