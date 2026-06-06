@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: edusphere
+    env: docker
+    plan: free
+    disk:
+      name: edusphere-db
+      mountPath: /data
+      sizeGB: 1

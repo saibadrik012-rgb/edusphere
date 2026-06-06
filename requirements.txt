@@ -1,2 +1,2 @@
-taipy
+nicegui
 google-genai
