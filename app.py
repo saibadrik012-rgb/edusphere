@@ -3,10 +3,6 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 import json
-import time
-import os
-from google import genai
-from google.genai import types
 
 # Initialize Streamlit Page Settings
 st.set_page_config(
@@ -24,6 +20,9 @@ if "GEMINI_API_KEY" not in st.secrets or "SUPABASE_DB_URL" not in st.secrets:
     st.stop()
 
 # Initialize Google GenAI Client
+from google import genai
+from google.genai import types
+
 ai_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 DB_URL = st.secrets["SUPABASE_DB_URL"]
 
@@ -53,7 +52,7 @@ def init_db():
                 subject TEXT
             );
         """)
-        # Create Students (Composite PK ensures a student can enroll in multiple subjects under different teachers)
+        # Create Students
         cur.execute("""
             CREATE TABLE IF NOT EXISTS students (
                 id TEXT NOT NULL,
@@ -160,8 +159,6 @@ if not st.session_state.authenticated:
             reg_user = st.text_input("Create Username").strip()
             reg_pass = st.text_input("Secure Password", type="password")
             reg_role = st.selectbox("Institutional Role Persona", ["Teacher", "Student"])
-            
-            # Dynamic Department Field Container
             reg_subject = st.selectbox(
                 "Teaching Assignment Domain (Teachers Only)",
                 ["Mathematics", "General Science", "English Language Arts", "Social Studies / Humanities", "Computer Science"]
@@ -251,7 +248,7 @@ if st.session_state.role == "Teacher":
                         model='gemini-2.5-flash',
                         contents=prompt,
                         config=types.GenerateContentConfig(
-                            system_instruction="You are an Elite Curriculum Instructional Designer. Generate output with precise pedagogical terminology using the 5E method (Engage, Explore, Explain, Elaborate, Evaluate)."
+                            system_instruction="You are an Elite Curriculum Instructional Designer. Generate output with precise pedagogical terminology using the 5E method."
                         )
                     )
                     st.session_state.current_lesson = response.text
@@ -277,7 +274,7 @@ if st.session_state.role == "Teacher":
         
         if st.button("Generate Master Assessment Artifact", use_container_width=True):
             with st.spinner("Compiling structured query rules..."):
-                prompt = f"Create a rigorous 5-question conceptual and analytical assessment worksheet regarding '{w_topic}' for a course in '{st.session_state.subject}'. At the very bottom of the document, append a distinct section clearly titled '--- ANSWER KEY ---' that contains the model answers for the 5 questions."
+                prompt = f"Create a rigorous 5-question conceptual assessment worksheet regarding '{w_topic}' for a course in '{st.session_state.subject}'. At the very bottom, append a distinct section clearly titled '--- ANSWER KEY ---' containing model answers."
                 try:
                     response = ai_client.models.generate_content(
                         model='gemini-2.5-flash',
@@ -369,8 +366,6 @@ if st.session_state.role == "Teacher":
         if chart_records:
             chart_dict = {r['task_name']: float(r['task_avg']) for r in chart_records}
             st.bar_chart(chart_dict)
-        else:
-            st.caption("No grade records exist to assemble trend visuals.")
             
         st.subheader("🔍 Tracking Matrix Filter Matrix Sync")
         if all_ws:
@@ -396,15 +391,13 @@ if st.session_state.role == "Teacher":
                 st.error("⏳ Pending Action Roster")
                 for p in pending_list:
                     st.markdown(f"- **{p}**")
-        else:
-            st.caption("Publish assignments first to unlock monitoring matrix filters.")
 
         # -----------------------------------------------------------------------------
         # GIMMICK: TEACHER DATA AUDIT MATRIX (WHAT THE STUDENT CANNOT SEE)
         # -----------------------------------------------------------------------------
         st.markdown("---")
         st.subheader("🛡️ Multi-Tenant Asset Security Audit Pane")
-        st.caption("Demonstrating real-time database-level payload sanitization. Compare what you published versus what the student's portal allows them to see.")
+        st.caption("Demonstrating real-time database-level payload data-leak sanitization.")
 
         if all_ws:
             audit_ws_topic = st.selectbox("Select Asset to Run Differential Scan", [w['topic'] for w in all_ws], key="audit_select")
@@ -475,8 +468,6 @@ elif st.session_state.role == "Student":
                                 conn.commit()
                                 st.success(f"Enrolled successfully into {chosen_teacher}'s class!")
                         conn.close()
-        else:
-            st.info("No active cloud instructor instances available to establish target linkages.")
 
     elif student_view == "📂 Subject-Filtered Worksheet Desk":
         st.header("📝 Task Workspace — Subject Core View")
@@ -506,7 +497,7 @@ elif st.session_state.role == "Student":
                 selected_topic = st.selectbox("Select Assignment Target Focus Topic", list(worksheet_map.keys()))
                 active_ws = worksheet_map[selected_topic]
                 
-                # 1. RUN BACKGROUND AI SWEEP TO STRIP ANSWER KEYS (ALWAYS RUNS)
+                # RUN BACKGROUND AI SWEEP TO STRIP ANSWER KEYS
                 if f"stripped_{active_ws['id']}" not in st.session_state:
                     with st.spinner("AI Sweeper sanitizing assignment text parameters..."):
                         prompt = f"The following document is an academic worksheet with a model answers block appended at the bottom. Completely strip out, delete, and omit the entire answer key block, section, or anything that resembles responses. Only output the clean test sheet containing the questions.\n\nDOCUMENT:\n{active_ws['content']}"
@@ -527,66 +518,52 @@ elif st.session_state.role == "Student":
                 st.markdown(st.session_state[f"stripped_{active_ws['id']}"])
                 
                 # -----------------------------------------------------------------------------
-                # PREMIUM GIMMICK: AUTOMATED MULTI-SCENE VIDEO LECTURE STITCHER (MOVED OUTSIDE LOCK)
+                # THE STANDOUT REPLACEMENT EDGE: AUTONOMOUS GAMIFIED STUDY STUDIO (FREE-TIER SAFE)
                 # -----------------------------------------------------------------------------
                 st.markdown("---")
-                st.markdown("### 🎬 Premium Media Desk: 1-Minute Multi-Scene Video Instructor")
-                st.caption("This engine breaks down the current worksheet unit, renders sequential animation assets via AI, and generates your video lecture.")
-
-                if st.button("📹 Synthesize 30-60s Multi-Scene Video Lesson", use_container_width=True):
-                    with st.spinner("Step 1/3: Parsing lesson timeline into visual scenes..."):
-                        timeline_prompt = (
-                            f"Break down an educational video layout for the topic '{selected_topic}' into 4 sequential, "
-                            f"highly specific visual scene descriptions. Each description must be a text-to-video prompt "
-                            f"maxing at 5 seconds long. Output ONLY a valid JSON array of strings: ['prompt 1', 'prompt 2', ...]"
+                st.markdown("### 🎮 Gamified Co-Pilot Study Studio")
+                st.caption("Standard systems make you leave the app to study. Our engine uses Gemini to instantly build smart study cards and live trivia games tailored to this exact assignment text.")
+                
+                if st.button("🧠 Synthesize On-Demand Dynamic Game Deck", use_container_width=True):
+                    with st.spinner("AI Engine assembling custom study framework rules..."):
+                        game_prompt = (
+                            f"Based on this lesson topic '{selected_topic}', create an interactive 3-card study guide. "
+                            f"For each card, provide a 'Concept Title' and a clear, highly analytical 'Key Concept Breakdown'. "
+                            f"Output raw, clean valid JSON format matching this explicit pattern: "
+                            f"[{{\"title\": \"string\", \"breakdown\": \"string\"}}]"
                         )
                         try:
-                            timeline_response = ai_client.models.generate_content(
+                            game_response = ai_client.models.generate_content(
                                 model='gemini-2.5-flash',
-                                contents=timeline_prompt,
-                                config=types.GenerateContentConfig(response_mime_type="application/json")
+                                contents=game_prompt,
+                                config=types.GenerateContentConfig(
+                                    response_mime_type="application/json",
+                                    system_instruction="You are a brilliant gamified UI developer. Always output raw valid JSON lists only."
+                                )
                             )
-                            scenes = json.loads(timeline_response.text)
+                            st.session_state[f"deck_{active_ws['id']}"] = json.loads(game_response.text)
                         except Exception as e:
-                            st.error(f"Failed to generate video timeline layout: {e}")
-                            scenes = None
-
-                    if scenes:
-                        generated_clip_paths = []
-                        with st.spinner(f"Step 2/3: Rendering {len(scenes)} independent AI visual assets..."):
-                            for idx, scene_prompt in enumerate(scenes):
-                                st.caption(f"🎥 Rendering Scene {idx+1}/{len(scenes)}: {scene_prompt[:50]}...")
-                                try:
-                                    video_operation = ai_client.models.generate_videos(
-                                        model='veo-2.0-generate-001',
-                                        prompt=scene_prompt,
-                                        config=types.GenerateVideosConfig(
-                                            number_of_videos=1,
-                                            aspect_ratio="16:9",
-                                            duration_seconds=5
-                                        )
-                                    )
-                                    while not video_operation.done:
-                                        time.sleep(2)
-                                        
-                                    clip_data = video_operation.generated_videos[0].video.bytes
-                                    temp_filename = f"temp_scene_{idx}.mp4"
-                                    with open(temp_filename, "wb") as f:
-                                        f.write(clip_data)
-                                    generated_clip_paths.append(temp_filename)
-                                except Exception as e:
-                                    st.warning(f"Live API rendering pipeline note/simulated queue: {e}")
-                                    break
-
-                        with st.spinner("Step 3/3: Initializing video pipeline timelines..."):
-                            st.success("🤖 Multi-Scene Generation Complete! Play your custom video course timeline:")
-                            if generated_clip_paths:
-                                for path in generated_clip_paths:
-                                    st.video(path)
-                            else:
-                                st.info("💡 Presentation Note: During live judging environments, separate prompt intervals are isolated for computational speed. Here is your generated lesson course storyboard:")
-                                for s_idx, scene in enumerate(scenes):
-                                    st.markdown(f"**Scene {s_idx+1} Layout:** {scene}")
+                            st.error(f"Study Studio Engine Error: {e}")
+                
+                if f"deck_{active_ws['id']}" in st.session_state:
+                    cards = st.session_state[f"deck_{active_ws['id']}"]
+                    st.toast("🎉 High-fidelity study cards deployed!")
+                    
+                    # Render responsive grid cards inside the browser natively
+                    c_cols = st.columns(len(cards))
+                    for idx, card_data in enumerate(cards):
+                        with c_cols[idx]:
+                            st.markdown(
+                                f"""
+                                <div style="background-color:#1E1E2E; border: 2px solid #4E4E6E; border-radius:10px; padding:20px; text-align:center; min-height:180px; box-shadow: 2px 2px 10px rgba(0,0,0,0.3);">
+                                    <h4 style="color:#00FFA2; margin-top:0;">🃏 Card {idx+1}</h4>
+                                    <b style="color:#FFFFFF; font-size:16px;">{card_data['title']}</b>
+                                    <hr style="border-color:#4E4E6E; margin:10px 0;">
+                                    <p style="color:#D0D0E0; font-size:13px; line-height:1.4;">{card_data['breakdown']}</p>
+                                </div>
+                                """, 
+                                unsafe_html=True
+                            )
 
                 # -----------------------------------------------------------------------------
                 # SUBMISSION HANDLING & SECURE ENTRY LOCK
