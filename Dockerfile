@@ -7,8 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Expose port 7860 which is Hugging Face's default port
+# Create a dedicated directory for our persistent database file
+RUN mkdir -p /data
+
 EXPOSE 7860
 
-# Command to run Taipy, binding it to all hosts and HF's port
-CMD ["python", "app.py", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["python", "app.py"]
