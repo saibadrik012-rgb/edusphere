@@ -362,7 +362,7 @@ def process_student_homework_submission(state):
             cursor = conn.cursor()
             cursor.execute("INSERT INTO grades (teacher_username, student_name, subject, task_name, mark, feedback, student_submission) VALUES (?,?,?,?,?,?,?);",
                         (master_ws['teacher_username'], state.current_user, master_ws['subject'], state.selected_worksheet_topic, int(data['grade']), data['feedback'], state.student_answer_buffer))
-                conn.commit()
+            conn.commit()
             conn.close()
             notify(state, "success", f"Assignment logged! Score: {state.student_grade_result}/100")
             refresh_data_matrices(state)
