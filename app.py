@@ -393,6 +393,75 @@ if st.session_state.role == "Teacher":
                     st.markdown(f"- **{p}**")
 
         # -----------------------------------------------------------------------------
+        # PREMIUM COMPETITION EDGE: PREDICTIVE LEARNING DIAGNOSTICS & RISK MAPPING
+        # -----------------------------------------------------------------------------
+        st.markdown("---")
+        st.subheader("🔮 Predictive Learning Diagnostics & Early Intervention Hub")
+        st.caption("Standard platforms look backward; our AI predictive analytics suite runs dynamic risk mapping on multi-tenant database history to flag struggling students before they fail.")
+
+        if st.button("🔍 Run Automated AI Forensic Risk Sweep", use_container_width=True):
+            conn = get_db_connection()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT student_name, task_name, mark, feedback, student_submission 
+                    FROM grades WHERE teacher_username = %s;
+                """, (st.session_state.username,))
+                historical_payload = cur.fetchall()
+            conn.close()
+
+            if historical_payload:
+                with st.spinner("AI Predictive Engine mapping class vulnerability metrics..."):
+                    serialized_data = json.dumps(historical_payload, default=str)
+                    
+                    risk_prompt = f"""
+                    Analyze this raw JSON gradebook history data for my class:
+                    {serialized_data}
+                    
+                    Identify any students who are performing poorly or trending downward (marks below 70%). 
+                    For each flagged student, identify their core conceptual misunderstanding based on their submission logs/feedback.
+                    Provide an explicit 1-sentence pedagogical strategy to support them.
+                    
+                    Format your response strictly as a JSON array matching this structure:
+                    [
+                      {{"student": "Name", "risk_level": "High/Medium", "weakness": "Specific Concept", "intervention": "Strategy"}}
+                    ]
+                    """
+                    try:
+                        risk_response = ai_client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=risk_prompt,
+                            config=types.GenerateContentConfig(
+                                response_mime_type="application/json",
+                                system_instruction="You are a senior predictive educational psychometrician. Output raw, valid JSON arrays only."
+                            )
+                        )
+                        risk_matrix = json.loads(risk_response.text)
+                        
+                        st.success("🎯 Risk Mapping Analysis Matrix Stream Complete!")
+                        
+                        for alert in risk_matrix:
+                            b_color = "#FF4B4B" if alert['risk_level'] == "High" else "#FFAA00"
+                            with st.container(border=True):
+                                col_status, col_desc = st.columns([1, 4])
+                                with col_status:
+                                    st.markdown(
+                                        f"""
+                                        <div style="background-color:{b_color}; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; margin-top:10px;">
+                                            ⚠️ {alert['risk_level']} Risk
+                                        </div>
+                                        """, 
+                                        unsafe_html=True
+                                    )
+                                with col_desc:
+                                    st.markdown(f"👥 **Student:** `{alert['student']}`")
+                                    st.markdown(f"🔬 **Identified Conceptual Gap:** {alert['weakness']}")
+                                    st.info(f"📋 **Automated Intervention Path:** {alert['intervention']}")
+                    except Exception as e:
+                        st.error(f"Predictive Engine Error: {e}")
+            else:
+                st.warning("Insufficient multi-tenant historical grade logs available to calculate predictive trend lines.")
+
+        # -----------------------------------------------------------------------------
         # GIMMICK: TEACHER DATA AUDIT MATRIX (WHAT THE STUDENT CANNOT SEE)
         # -----------------------------------------------------------------------------
         st.markdown("---")
@@ -516,54 +585,6 @@ elif st.session_state.role == "Student":
                 
                 st.subheader("📋 Core Examination Blueprint")
                 st.markdown(st.session_state[f"stripped_{active_ws['id']}"])
-                
-                # -----------------------------------------------------------------------------
-                # THE STANDOUT REPLACEMENT EDGE: AUTONOMOUS GAMIFIED STUDY STUDIO (FREE-TIER SAFE)
-                # -----------------------------------------------------------------------------
-                st.markdown("---")
-                st.markdown("### 🎮 Gamified Co-Pilot Study Studio")
-                st.caption("Standard systems make you leave the app to study. Our engine uses Gemini to instantly build smart study cards and live trivia games tailored to this exact assignment text.")
-                
-                if st.button("🧠 Synthesize On-Demand Dynamic Game Deck", use_container_width=True):
-                    with st.spinner("AI Engine assembling custom study framework rules..."):
-                        game_prompt = (
-                            f"Based on this lesson topic '{selected_topic}', create an interactive 3-card study guide. "
-                            f"For each card, provide a 'Concept Title' and a clear, highly analytical 'Key Concept Breakdown'. "
-                            f"Output raw, clean valid JSON format matching this explicit pattern: "
-                            f"[{{\"title\": \"string\", \"breakdown\": \"string\"}}]"
-                        )
-                        try:
-                            game_response = ai_client.models.generate_content(
-                                model='gemini-2.5-flash',
-                                contents=game_prompt,
-                                config=types.GenerateContentConfig(
-                                    response_mime_type="application/json",
-                                    system_instruction="You are a brilliant gamified UI developer. Always output raw valid JSON lists only."
-                                )
-                            )
-                            st.session_state[f"deck_{active_ws['id']}"] = json.loads(game_response.text)
-                        except Exception as e:
-                            st.error(f"Study Studio Engine Error: {e}")
-                
-                if f"deck_{active_ws['id']}" in st.session_state:
-                    cards = st.session_state[f"deck_{active_ws['id']}"]
-                    st.toast("🎉 High-fidelity study cards deployed!")
-                    
-                    # Render responsive grid cards inside the browser natively
-                    c_cols = st.columns(len(cards))
-                    for idx, card_data in enumerate(cards):
-                        with c_cols[idx]:
-                            st.markdown(
-                                f"""
-                                <div style="background-color:#1E1E2E; border: 2px solid #4E4E6E; border-radius:10px; padding:20px; text-align:center; min-height:180px; box-shadow: 2px 2px 10px rgba(0,0,0,0.3);">
-                                    <h4 style="color:#00FFA2; margin-top:0;">🃏 Card {idx+1}</h4>
-                                    <b style="color:#FFFFFF; font-size:16px;">{card_data['title']}</b>
-                                    <hr style="border-color:#4E4E6E; margin:10px 0;">
-                                    <p style="color:#D0D0E0; font-size:13px; line-height:1.4;">{card_data['breakdown']}</p>
-                                </div>
-                                """, 
-                                unsafe_html=True
-                            )
 
                 # -----------------------------------------------------------------------------
                 # SUBMISSION HANDLING & SECURE ENTRY LOCK
