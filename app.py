@@ -25,7 +25,6 @@ def get_db_connection():
     """Establishes an internal connection to the persistent SQLite database file."""
     try:
         conn = sqlite3.connect(DB_PATH)
-        # Allows accessing columns by string names like a dictionary
         conn.row_factory = sqlite3.Row
         return conn
     except Exception as e:
@@ -98,7 +97,6 @@ def init_db():
         conn.commit()
     conn.close()
 
-# Run database setup checks
 init_db()
 
 # -----------------------------------------------------------------------------
@@ -185,7 +183,7 @@ def translate_app_ui(state):
         notify(state, "warning", "Localization engine timeout. Using English default.")
 
 # -----------------------------------------------------------------------------
-# APP LOGIC METHODS (SQLITE ADAPTED)
+# APP LOGIC METHODS
 # -----------------------------------------------------------------------------
 def handle_login(state):
     if not state.username_input or not state.password_input:
@@ -375,199 +373,200 @@ def trigger_logout(state):
     state.user_role = ""
 
 # -----------------------------------------------------------------------------
-# TAIPY MARKDOWN LAYOUT BLUEPRINT
+# TAIPY NATIVE MARKDOWN BLUEPRINTS (100% CORRECTED COMPONENT CODES)
 # -----------------------------------------------------------------------------
+localization_bar = """
+|<card>|
+|<layout|columns=3 1|
+**🌐 Global Localization Platform Engine Suite:** Choose application interface language:
+
+<|<{selected_language}>|selector|lov={language_options}|dropdown=True|on_change=translate_app_ui|>
+|
+|
+
+---
+"""
+
 login_layout = """
-|text-center|
-# <tpl>{UI['app_title']}</tpl>
-<tpl>{UI['welcome_msg']}</tpl>
+|<text-center>|
+# {UI['app_title']}
+{UI['welcome_msg']}
 |
 
 ---
 
-|{not logged_in}|
-|container|
-<layout columns="1 1" gap="30px">
-    |card|
-    ### 🔑 Sign-In Gateway
-    **Username**
-    <input value="{username_input}" class="fullwidth"/>
-    
-    **Password**
-    <input value="{password_input}" type="password" class="fullwidth"/>
-    <br/><br/>
-    <button label="Authenticate Access" on_action="handle_login" class="btn-primary"/>
-    |
+|<{not logged_in}>|
+|<container>|
+|<layout|columns=1 1|gap=30px|
+|<card>|
+### 🔑 Sign-In Gateway
+**Username**
+<|<{username_input}>|input|class_name=fullwidth|>
 
-    |card|
-    ### 📝 New Institutional Registration
-    **Create New Profile Username**
-    <input value="{reg_username}" class="fullwidth"/>
-    
-    **Secure Key Password**
-    <input value="{reg_password}" type="password" class="fullwidth"/>
-    
-    **System Role Persona**
-    <selector value="{reg_role}" lov="Teacher;Student" dropdown="True"/>
-    
-    **Teaching Dept**
-    <selector value="{reg_subject}" lov="Mathematics;General Science;English Language Arts;Social Studies;Computer Science" dropdown="True"/>
-    <br/><br/>
-    <button label="Deploy Global Tenant" on_action="handle_registration" class="btn-secondary"/>
-    |
-</layout>
+**Password**
+<|<{password_input}>|input|password=True|class_name=fullwidth|>
+<br/><br/>
+<|<{UI['btn_signin']}>|button|on_action=handle_login|class_name=btn-primary|>
+|
+
+|<card>|
+### 📝 New Institutional Registration
+**Create New Profile Username**
+<|<{reg_username}>|input|class_name=fullwidth|>
+
+**Secure Key Password**
+<|<{reg_password}>|input|password=True|class_name=fullwidth|>
+
+**System Role Persona**
+<|<{reg_role}>|selector|lov=Teacher;Student|dropdown=True|>
+
+**Teaching Dept**
+<|<{reg_subject}>|selector|lov=Mathematics;General Science;English Language Arts;Social Studies;Computer Science|dropdown=True|>
+<br/><br/>
+<|<{UI['btn_deploy_tenant']}>|button|on_action=handle_registration|class_name=btn-secondary|>
+|
+|
 |
 |
 """
 
 teacher_layout = """
-|{logged_in and user_role == 'Teacher'}|
-## 🍎 Instructor Console — Dept: <tpl>{user_subject}</tpl>
+|<{logged_in and user_role == 'Teacher'}>|
+## 🍎 Instructor Console — Dept: {user_subject}
 
 ---
 
-<layout columns="1 4" gap="20px">
-    |sidebar-card|
-    #### Navigation Desk
-    <selector value="{selected_view}" lov="Classroom Roster;AI Lesson Architect;AI Worksheet Factory;📊 Student Advanced Analytics" mode="radio"/>
-    <br/><br/>
-    <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
-    |
+|<layout|columns=1 4|gap=20px|
+|<sidebar-card>|
+#### Navigation Desk
+<|<{selected_view}>|selector|lov=Classroom Roster;AI Lesson Architect;AI Worksheet Factory;📊 Student Advanced Analytics|mode=radio|>
+<br/><br/>
+<|<{UI['logout_btn']}>|button|on_action=trigger_logout|class_name=btn-danger|>
+|
 
-    |main-content|
-    |{selected_view == 'Classroom Roster'}|
-    ### 👥 Active Class Enrollment Roster
-    <table data="{roster_table_data}"/>
-    |
+|<main-content>|
+|<{selected_view == 'Classroom Roster'}>|
+### 👥 Active Class Enrollment Roster
+<|<{roster_table_data}>|table|>
+|
 
-    |{selected_view == 'AI Lesson Architect'}|
-    ### 🧠 Core 5E Lesson Plan Synthesis Machine
-    **Syllabus Target Topic**
-    <input value="{topic_input}" class="fullwidth"/>
-    
-    **Target Cohort Grade Tier Selection**
-    <selector value="{grade_tier}" lov="Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League" dropdown="True"/>
-    <br/><br/>
-    <button label="Synthesize Lesson Plan" on_action="generate_lesson_plan" class="btn-primary"/>
-    <br/><br/>
-    <text_area value="{ai_output_lesson}" height="350px" class="fullwidth"/>
-    |
+|<{selected_view == 'AI Lesson Architect'}>|
+### 🧠 Core 5E Lesson Plan Synthesis Machine
+**Syllabus Target Topic**
+<|<{topic_input}>|input|class_name=fullwidth|>
 
-    |{selected_view == 'AI Worksheet Factory'}|
-    ### 📝 Assessment Factory & Blueprint Key Generator
-    **Target Core Unit Objective**
-    <input value="{w_topic_input}" class="fullwidth"/>
-    <br/><br/>
-    <button label="Generate Test Sheet & Key" on_action="generate_worksheet" class="btn-primary"/>
-    <br/><br/>
-    <text_area value="{ai_output_worksheet}" height="300px" class="fullwidth"/>
-    <br/><br/>
-    <button label="Commit Worksheet to Local Storage Database" on_action="commit_worksheet_to_cloud" class="btn-success"/>
-    |
+**Target Cohort Grade Tier Selection**
+<|<{grade_tier}>|selector|lov=Grade 6-8 Middle School;Grade 9-12 High School;Undergraduate Ivy-League|dropdown=True|>
+<br/><br/>
+<|<{UI['btn_synth_lesson']}>|button|on_action=generate_lesson_plan|class_name=btn-primary|>
+<br/><br/>
+<|<{ai_output_lesson}>|text_area|height=350px|class_name=fullwidth|>
+|
 
-    |{selected_view == '📊 Student Advanced Analytics'}|
-    ### 📈 Command System Metrics Grid
-    <layout columns="1 1 1" gap="15px">
-        |card text-center|
-        ##### Roster Volume 
-        ## <tpl>{total_students_metric}</tpl>
-        |
-        |card text-center|
-        ##### Grade Mean 
-        ## <tpl>{class_mean_metric}</tpl>
-        |
-        |card text-center|
-        ##### Live Test Forms 
-        ## <tpl>{published_tasks_metric}</tpl>
-        |
-    </layout>
-    
-    ---
-    
-    ### 🔮 Predictive Student Risk Diagnostics Mapping Suite
-    <button label="Run Automated AI Forensic Risk Sweep" on_action="run_predictive_risk_sweep" class="btn-warning"/>
-    <br/><br/>
-    |{len(predictive_risk_logs) > 0}|
-    <table data="{predictive_risk_logs}"/>
-    |
-    |
-    |
-</layout>
+|<{selected_view == 'AI Worksheet Factory'}>|
+### 📝 Assessment Factory & Blueprint Key Generator
+**Target Core Unit Objective**
+<|<{w_topic_input}>|input|class_name=fullwidth|>
+<br/><br/>
+<|<{UI['btn_gen_worksheet']}>|button|on_action=generate_worksheet|class_name=btn-primary|>
+<br/><br/>
+<|<{ai_output_worksheet}>|text_area|height=300px|class_name=fullwidth|>
+<br/><br/>
+<|Commit Worksheet to Local Storage Database|button|on_action=commit_worksheet_to_cloud|class_name=btn-success|>
+|
+
+|<{selected_view == '📊 Student Advanced Analytics'}>|
+### 📈 Command System Metrics Grid
+|<layout|columns=1 1 1|gap=15px|
+|<card text-center>|
+##### Roster Volume
+## {total_students_metric}
+|
+|<card text-center>|
+##### Grade Mean
+## {class_mean_metric}
+|
+|<card text-center>|
+##### Live Test Forms
+## {published_tasks_metric}
+|
+|
+
+---
+
+### 🔮 Predictive Student Risk Diagnostics Mapping Suite
+<|<{UI['btn_risk_sweep']}>|button|on_action=run_predictive_risk_sweep|class_name=btn-warning|>
+<br/><br/>
+|<{len(predictive_risk_logs) > 0}>|
+<|<{predictive_risk_logs}>|table|>
+|
+|
+|
+|
 |
 """
 
 student_layout = """
-|{logged_in and user_role == 'Student'}|
+|<{logged_in and user_role == 'Student'}>|
 ## 🎒 Student Action Desktop Portal
 
 ---
 
-<layout columns="1 4" gap="20px">
-    |sidebar-card|
-    #### Student Control Desk
-    <selector value="{student_view}" lov="🎒 Enroll in a Class;📂 Subject-Filtered Worksheet Desk;🏆 My Performance Ledger" mode="radio"/>
-    <br/><br/>
-    <button label="Log Out" on_action="trigger_logout" class="btn-danger"/>
-    |
-
-    |main-content|
-    |{student_view == '🎒 Enroll in a Class'}|
-    ### 🎒 Connect Course Workspace Network
-    **Select Academic Instructor**
-    <selector value="{selected_teacher_string}" lov="{available_teachers}" dropdown="True"/>
-    
-    **Assign Student ID Token**
-    <input value="{student_id_token}" class="fullwidth"/>
-    
-    **Current Study Cohort Group**
-    <selector value="{student_grade_cohort}" lov="Grade 6;Grade 9;Grade 11;Undergraduate" dropdown="True"/>
-    <br/><br/>
-    <button label="Submit Secure Connection Registration" on_action="handle_class_enrollment" class="btn-primary"/>
-    |
-
-    |{student_view == '📂 Subject-Filtered Worksheet Desk'}|
-    ### 📝 Automated Sanitized Task Workspace
-    **Select Active Assignment Target**
-    <selector value="{selected_worksheet_topic}" lov="{available_worksheets}" dropdown="True" on_change="load_sanitized_worksheet"/>
-    <br/><br/>
-    |{selected_worksheet_topic != ''}|
-    ##### 📋 Sanitized Examination Blueprint (Answers Stripped by AI)
-    <text_area value="{sanitized_blueprint_text}" height="250px" class="fullwidth" active="False"/>
-    
-    ---
-    
-    ##### Input Your Final Solution Answers Log Below:
-    <text_area value="{student_answer_buffer}" height="150px" class="fullwidth"/>
-    <br/><br/>
-    <button label="Finalize and Submit Assignment Log" on_action="process_student_homework_submission" class="btn-success"/>
-    
-    ---
-    
-    ##### Instant Grading Analysis Reports:
-    **Computed Grade:** <tpl>{student_grade_result}</tpl>/100
-    
-    **Evaluator Commentary:** <tpl>{student_feedback_report}</tpl>
-    |
-    |
-
-    |{student_view == '🏆 My Performance Ledger'}|
-    ### 🏆 Historical Academic Performance Ledger Matrix
-    <table data="{my_grades_table_data}"/>
-    |
-    |
-</layout>
+|<layout|columns=1 4|gap=20px|
+|<sidebar-card>|
+#### Student Control Desk
+<|<{student_view}>|selector|lov=🎒 Enroll in a Class;📂 Subject-Filtered Worksheet Desk;🏆 My Performance Ledger|mode=radio|>
+<br/><br/>
+<|<{UI['logout_btn']}>|button|on_action=trigger_logout|class_name=btn-danger|>
 |
-"""
 
-localization_bar = """
-|card|
-<layout columns="3 1">
-    **🌐 Global Localization Platform Engine Suite:** Choose application interface language:
-    <selector value="{selected_language}" lov="{language_options}" dropdown="True" on_change="translate_app_ui"/>
-</layout>
+|<main-content>|
+|<{student_view == '🎒 Enroll in a Class'}>|
+### 🎒 Connect Course Workspace Network
+**Select Academic Instructor**
+<|<{selected_teacher_string}>|selector|lov={available_teachers}|dropdown=True|>
+
+**Assign Student ID Token**
+<|<{student_id_token}>|input|class_name=fullwidth|>
+
+**Current Study Cohort Group**
+<|<{student_grade_cohort}>|selector|lov=Grade 6;Grade 9;Grade 11;Undergraduate|dropdown=True|>
+<br/><br/>
+<|<{UI['submit_conn_btn']}>|button|on_action=handle_class_enrollment|class_name=btn-primary|>
 |
+
+|<{student_view == '📂 Subject-Filtered Worksheet Desk'}>|
+### 📝 Automated Sanitized Task Workspace
+**Select Active Assignment Target**
+<|<{selected_worksheet_topic}>|selector|lov={available_worksheets}|dropdown=True|on_change=load_sanitized_worksheet|>
+<br/><br/>
+|<{selected_worksheet_topic != ''}>|
+##### 📋 Sanitized Examination Blueprint (Answers Stripped by AI)
+<|<{sanitized_blueprint_text}>|text_area|height=250px|class_name=fullwidth|active=False|>
 
 ---
+
+##### Input Your Final Solution Answers Log Below:
+<|<{student_answer_buffer}>|text_area|height=150px|class_name=fullwidth|>
+<br/><br/>
+<|<{UI['finalize_submit_btn']}>|button|on_action=process_student_homework_submission|class_name=btn-success|>
+
+---
+
+##### Instant Grading Analysis Reports:
+**Computed Grade:** {student_grade_result}/100
+
+**Evaluator Commentary:** {student_feedback_report}
+|
+|
+
+|<{student_view == '🏆 My Performance Ledger'}>|
+### 🏆 Historical Academic Performance Ledger Matrix
+<|<{my_grades_table_data}>|table|>
+|
+|
+|
+|
 """
 
 full_ui_blueprint = localization_bar + login_layout + teacher_layout + student_layout
