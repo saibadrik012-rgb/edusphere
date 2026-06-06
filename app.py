@@ -616,53 +616,53 @@ elif st.session_state.role == "Student":
                     student_submission_text = st.text_area(UI["input_answers_here"], height=250)
                     
                     if st.button(UI["finalize_submit_btn"], use_container_width=True):
-    if not student_submission_text.strip():
-        st.error(UI["buffer_blank_error"])
-    else:
-        with st.spinner(UI["evaluator_grading"]):
-            # PROMPT: Focused only on grading and feedback
-            prompt = (
-                f"Master Context:\n{active_ws['content']}\n\n"
-                f"Student Answers:\n{student_submission_text}\n\n"
-                f"Grade out of 100. Return a JSON object with keys: "
-                f"\"grade\" (int) and \"feedback\" (string, written in {selected_language})."
-            )
-            
-            try:
-                response = ai_client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        system_instruction="You are a strict automated grading assistant. Output raw valid JSON code only."
-                    )
-                )
-                res_data = json.loads(response.text)
-            except Exception as e:
-                st.error(f"{UI['grading_fault']} {e}")
-                st.stop()
-
-            # DATABASE TRANSACTION: Grades only
-            conn = get_db_connection()
-            with conn.cursor() as cur:
-                cur.execute("""
-                    INSERT INTO grades (teacher_username, student_name, subject, task_name, mark, feedback, student_submission) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s);
-                """, (
-                    target_class['teacher_username'], 
-                    st.session_state.username, 
-                    target_class['subject'], 
-                    selected_topic, 
-                    int(res_data['grade']), 
-                    res_data['feedback'], 
-                    student_submission_text
-                ))
-                conn.commit()
-        conn.close()
-
-        st.balloons()
-        st.success(UI["log_success"])
-        st.rerun()    
+                        if not student_submission_text.strip():
+                            st.error(UI["buffer_blank_error"])
+                        else:
+                            with st.spinner(UI["evaluator_grading"]):
+                                # PROMPT: Focused only on grading and feedback
+                                prompt = (
+                                    f"Master Context:\n{active_ws['content']}\n\n"
+                                    f"Student Answers:\n{student_submission_text}\n\n"
+                                    f"Grade out of 100. Return a JSON object with keys: "
+                                    f"\"grade\" (int) and \"feedback\" (string, written in {selected_language})."
+                                )
+                                
+                                try:
+                                    response = ai_client.models.generate_content(
+                                        model='gemini-2.5-flash',
+                                        contents=prompt,
+                                        config=types.GenerateContentConfig(
+                                            response_mime_type="application/json",
+                                            system_instruction="You are a strict automated grading assistant. Output raw valid JSON code only."
+                                        )
+                                    )
+                                    res_data = json.loads(response.text)
+                                except Exception as e:
+                                    st.error(f"{UI['grading_fault']} {e}")
+                                    st.stop()
+                    
+                                # DATABASE TRANSACTION: Grades only
+                                conn = get_db_connection()
+                                with conn.cursor() as cur:
+                                    cur.execute("""
+                                        INSERT INTO grades (teacher_username, student_name, subject, task_name, mark, feedback, student_submission) 
+                                        VALUES (%s, %s, %s, %s, %s, %s, %s);
+                                    """, (
+                                        target_class['teacher_username'], 
+                                        st.session_state.username, 
+                                        target_class['subject'], 
+                                        selected_topic, 
+                                        int(res_data['grade']), 
+                                        res_data['feedback'], 
+                                        student_submission_text
+                                    ))
+                                    conn.commit()
+                            conn.close()
+                    
+                            st.balloons()
+                            st.success(UI["log_success"])
+                            st.rerun()    
 
     elif student_view == "🏆 My Performance Ledger":
         st.header(UI["performance_ledger_title"])
