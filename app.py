@@ -617,9 +617,9 @@ elif st.session_state.role == "Student":
                     
                     if st.button(UI["finalize_submit_btn"], use_container_width=True):
          if not student_submission_text.strip():
-        st.error(UI["buffer_blank_error"])
-         else:
-             with st.spinner(UI["evaluator_grading"]):
+            st.error(UI["buffer_blank_error"])
+            else:
+              with st.spinner(UI["evaluator_grading"]):
                 # PROMPT: Focused only on grading and feedback
                 prompt = (
                 f"Master Context:\n{active_ws['content']}\n\n"
